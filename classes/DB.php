@@ -95,7 +95,7 @@ class DB{
     				$set.=", ";
     			}
     			$x++;
-    		}
+    		} 
 
     		$sql = "UPDATE {$table} SET {$set} WHERE id = {$id}";
     		if(!$this->query($sql,$param)->error()){
