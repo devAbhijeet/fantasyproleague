@@ -24,12 +24,16 @@ if(Input::exists()){
 			),
 			"confirmpassword" => array(
 				"matches"     => "password"
-			)
-		));
-		
+			) 
+		)); 
+		 
 		if($validate->passed()){
+			
+			array_walk($_POST,"Sanatize::arraySanatize");
+			
 			$user = new User();
 			$salt = Hash::salt(32);
+
 			try{
 				$user->create(array(
 					"email"    => Input::get("email"),

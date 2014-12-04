@@ -4,7 +4,7 @@ dir_name_autoload('fantasyproleague');
 
 $user = new User();
 if($user->loggedIn()):?>
-
+ 
 <p>
 	Hello,<?php echo $user->data()->username;?>
 </p>
