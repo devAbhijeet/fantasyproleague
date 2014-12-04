@@ -2,6 +2,19 @@
 require_once "core/init.php";
 dir_name_autoload('fantasyproleague');
 
-if(Session::exists("success")){
-	echo Session::flash("success");
-}
+$user = new User();
+if($user->loggedIn()):?>
+
+<p>
+	Hello,<?php echo $user->data()->username;?>
+</p>
+
+<a href="login/logout.php">Logout</a>
+
+<?php else:?>
+<p>
+	<a href="login/login.php">Login</a> <br> 
+	<a href="register/register.php">Register</a>
+</p>
+
+<?php endif;?>

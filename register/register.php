@@ -39,13 +39,13 @@ if(Input::exists()){
 					"joined"   => "NOW()"
 				));
 				Session::flash("success","You are registered successfully");
-				header("Location: ../index.php");
+				Redirect::to("index.php");
 			}catch(Exception $e){
 				echo $e->getMessage();
 			}
 		}else{
-			foreach ($validate->errors() as $value) {
-				echo $value."<br>";
+			foreach ($validate->errors() as $error) {
+				echo $error."<br>"; 
 			}
 		}
 	}
@@ -64,6 +64,7 @@ if(Input::exists()){
 			<div class="form-container">
 				<form action="" method="post" class="form-register" id="form-new-account" novalidate >
 					<fieldset>
+					<legend>Register</legend>
 						<div class="form-field">
 							<label for="email">Email Address</label>
 							<input type="email" name="email" id="email" maxlength="32" class="validate-locally" value="<?php echo Input::get('email');?>">
