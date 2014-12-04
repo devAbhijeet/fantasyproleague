@@ -3,7 +3,7 @@ class Validation{
 	private $_db = null,
 			$_error  = array(),
 			$_passes = false,
-			$_rules  = array("required","minLength","maxLength","email","regex","unique","matches","alnum");
+			$_rules  = array("required","minLength","maxLength","email","regex","unique","matches","alnumdash");
 
 	public $messages = array(
 		       "required"   => "The :field field is required",
@@ -13,7 +13,7 @@ class Validation{
 		       "regex"      => "The :field field is invalid",
 		       "unique"     => "The :field field already exists",
 		       "matches"    => "The :field field must match :rule_value",
-		       "alnum"      => "The :field field must be alphanumeric "
+		       "alnumdash"  => "The :field field must contain alphabet numbers and underscores/dash "
 		   ); 
 
 	public function __construct(){
@@ -78,12 +78,12 @@ class Validation{
 		return $value == $source[$rule_value];  
 	}
 
-	protected function alnum($field,$value,$rule_value,$source){
-		return ctype_alnum($value);
+	protected function alnumdash($field,$value,$rule_value,$source){
+		return preg_match($rule_value,$value) == 1 ? true : false; 
 	}
 
 	protected function regex($field,$value,$rule_value,$source){
-		return preg_match($rule_value,$value) !==1 ? true : false;
+		return preg_match($rule_value,$value) == 1 ? true : false;
 	}
 
 	public function passed(){

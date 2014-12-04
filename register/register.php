@@ -8,14 +8,14 @@ if(Input::exists()){
 			"email" 		  => array(
 				"required" 	  => true,
 				"maxLength"   => 32,
-				"regex"       => "/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$/",
+				"regex"       => "/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$/i",
 				"email"       => true
 			),
 			"username" 		  => array(
 				"required"    => true,
 				"maxLength"   => 32,
 				"minLength"   => 2,
-				"alnum"       => true,
+				"alnumdash"   => "/^[a-z0-9_\-]+$/i",
 				"unique"      => "users"
 			),
 			"password"		  => array(
@@ -51,7 +51,7 @@ if(Input::exists()){
 			foreach ($validate->errors() as $error) {
 				echo $error."<br>"; 
 			}
-		}
+		} 
 	}
 }
 
@@ -66,7 +66,7 @@ if(Input::exists()){
 	<body>
 		<div class="wrapper">
 			<div class="form-container">
-				<form action="" method="post" class="form-register" id="form-new-account" novalidate >
+				<form action="" method="post" name="form-register" class="form-register" id="form-new-account" novalidate >
 					<fieldset>
 					<legend>Register</legend>
 						<div class="form-field">
@@ -79,7 +79,7 @@ if(Input::exists()){
 
 						<div class="form-field">
 							<label for="username">Choose a username</label>
-							<input type="email" name="username" id="username" maxlength="32" class="validate-locally" value="<?php echo Input::get('username');?>">
+							<input type="text" name="username" id="username" maxlength="32" class="validate-locally" value="<?php echo Input::get('username');?>">
 							<span class="input-info" id="info">Choose a username </span>
 						   <span class="errors"></span>
 						   <span class="no-errors"></span>
@@ -98,7 +98,7 @@ if(Input::exists()){
 							<input type="password" name="confirmpassword" id="confirmpassword" maxlength="32" class="validate-locally">
 						   <span class="errors"></span>
 						   <span class="no-errors"></span>
-						</div>
+						</div> 
 
 						<input type="hidden" name="token" value="<?php echo Token::generate();?>">
 		                <div class="form-field">
@@ -110,5 +110,7 @@ if(Input::exists()){
 				</form>
 			</div>
 		</div>
+		<script src="../js/validate.js">
+		</script>
 	</body>
 </html> 
