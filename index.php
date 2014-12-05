@@ -1,6 +1,6 @@
 <?php
 require_once "core/init.php";
-dir_name_autoload('fantasyproleague');
+dir_name_autoload('fantasyproleague'); 
 
 $user = new User();
 if($user->loggedIn()):?>
@@ -13,8 +13,8 @@ if($user->loggedIn()):?>
 
 <?php else:?>
 <p>
-	<a href="login.php">Login</a> <br> 
-	<a href="register.php">Register</a>
+	<a href="login/login.php">Login</a> <br> 
+	<a href="register/register.php">Register</a>
 </p>
 
 <?php endif;?>
