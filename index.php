@@ -13,8 +13,8 @@ if($user->loggedIn()):?>
 
 <?php else:?>
 <p>
-	<a href="login/login.php">Login</a> <br> 
-	<a href="register/register.php">Register</a>
+	<a href="login.php">Login</a> <br> 
+	<a href="register.php">Register</a>
 </p>
 
 <?php endif;?>

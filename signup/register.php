@@ -1,6 +1,6 @@
 <?php
 require_once "../core/init.php";
-dir_name_autoload('register');
+dir_name_autoload("signup");
 if(Input::exists()){
 	if(Token::check(Input::get('token'))){
 		$validate  = new Validation();
