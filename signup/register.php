@@ -74,7 +74,7 @@ if(Input::exists()){
 							<input type="email" name="email" id="email" maxlength="32" class="validate-locally" value="<?php echo Input::get('email');?>">
 							<span class="errors"></span>
 							<span class="no-errors"></span>
-							<span class="input-info" id="info">E.g. someone@example.com</span>
+							<span class="input-info" id="info"></span>
 						</div> 
 
 						<div class="form-field">
@@ -82,7 +82,7 @@ if(Input::exists()){
 							<input type="text" name="username" id="username" maxlength="32" class="validate-locally" value="<?php echo Input::get('username');?>">
 							<span class="errors"></span>
 							<span class="no-errors"></span>
-							<span class="input-info" id="info">Choose a username</span>
+							<span class="input-info" id="info"></span>
 						</div>
 
 						<div class="form-field">
@@ -90,7 +90,7 @@ if(Input::exists()){
 							<input type="password" name="password" id="password" maxlength="32" class="validate-locally">
 							<span class="errors"></span>
 							<span class="no-errors"></span>
-							<span class="input-info" id="info">must be 6 characters</span>
+							<span class="input-info" id="info"></span>
 						</div>
 
 						<div class="form-field">

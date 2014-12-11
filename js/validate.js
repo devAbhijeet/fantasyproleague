@@ -1,174 +1,166 @@
 (function(window,document){
 
 	var defaults = {
-		messages : {
-			required      : "The %s field is required",
-			valid_email   : "The %s field is invalid",
-			alph_num_dash : "The %s field must be alphabet,numbers and underscores",
-			max_length    : "The %s field must be max of %s characters",
-			min_length    : "The %s field must be min of %s characters",
-			matches       : "The password field are not matching" 
+		message : {
+			required     : "The %s field is required",
+			validEmail   : "The %s field is invalid",
+			alphaNDash   : "The %s field must be alphabet,numbers and underscores",
+			maxLength    : "The %s field must be max of %s characters",
+			minLength    : "The %s field must be min of %s characters",
+			matches      : "The password field are not matching" 
 		}
 	};
 
-	var err = [];
-
-	var ruleRegex     = /^(.+?)\[(.+)\]$/,
-		numericRegex = /^[0-9]+$/,
+	var ruleRegex     = /^(.+?)\[(.+)\]$/,  
+		numericRegex  = /^[0-9]+$/,
 		emailRegex    = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$/i,
-		alph_num_dash =  /^[a-z0-9_\-]+$/i;
+		alphaNumDash  =  /^[a-z0-9_\-]+$/i; 
 
-	var FormValidate = function(formElementOrNode,fields,callback){
-		this.callback  = callback;
-		this.form      = this._formElementOrNode(formElementOrNode) || {};
-		this.fields    = {}; 
-		this.messages  = {};
-		this.errors    = [];
 
-		for(var i = 0,fieldsLength = fields.length;i<fieldsLength;i++){
+	var formValidate  = function(formField,fields){
+			this.message = {};
+			this.error   = {};
+			this.field   = {};
+			this.form    = this.getFormElement(formField);
 			
-			var field = fields[i];
-
-			if((!field.names && !field.name) || !field.rules){
-				continue;
-			}
-
-			if(field.names){
-				for(var j = 0,fieldNameLength = field.name.length;j<fieldNameLength;j++){
-					console.log(field.name[j]+" "+field);
+			for(var i=0,fieldLength=fields.length;i<fieldLength;i++){
+				var field = fields[i];
+				
+				if((!field.name || !field.rules)){
+					continue;
 				}
-			}else{
-				this._addField(field,field.name);
+				this.addField(field,field.name);
 			}
-		}
 
-		var _onsubmit = this.form.onsubmit;
-		this.form.onsubmit = (function(that){
-			return function(evt){
-				try{
-					return that._validateForm(evt) && (_onsubmit === undefined|| _onsubmit());
-				}catch(e){}
-			};
-		})(this);
+			var onkeyup = this.form.onkeyup;
+			this.form.onkeyup = (function(that){
+				return function(e){
+					that.validateForm(e);
+				};
+			})(this);
 	};
 
-	FormValidate.prototype._formElementOrNode = function(elem){
+	formValidate.prototype.getFormElement = function(elem){ 
 		return (typeof elem === "object") ? elem : document.forms[elem];
 	};
 
-	FormValidate.prototype._addField = function(field,nameValue){
-		this.fields[nameValue] = {
-			name  : nameValue,
-			display: field.display || nameValue,
-			rules : field.rules 
-		};
+	formValidate.prototype.addField = function(field,fieldName){
+		this.field[fieldName] = field;
 	};
 
-	FormValidate.prototype._validateForm = function(evt){
-		for(var prop in this.fields){
-			
-			if(this.fields.hasOwnProperty(prop)){
-				var field   = this.fields[prop] || {},
-					element = this.form[field.name];
-
-				if(element && element !== undefined){
-					field.id = element.id;
+	formValidate.prototype.validateForm = function(e){
+		var currentField = e.target.name; 
+ 		if(this.field.hasOwnProperty(currentField)){
+ 			var field = this.field[currentField] || {},
+ 				element = this.form[currentField];
+ 				
+ 				if(element && element !== undefined){
+					field.id      = element.id;
 					field.element = element;
 					field.type    = (element.length > 0) ? element[0].type : element.type;
 					field.value   = element.value;
 
-					this._validateField(field);
+					this.validateField(field,element);
 				}
-			}
 		}
 
-		if(typeof this.callback === "function"){
-			this.callback(this.errors);
-		}
+		
+		if(this.error.hasOwnProperty(field.name)){
+			
+			var errorElement = this.form[this.error[field.name].name];
 
-		if(this.errors.length > 0){
-			for(var i = 0,len = this.errors.length;i<len;i++){
-				this.form[this.errors[i].id].nextElementSibling.innerHTML = this.errors[i].id;
+			if(errorElement){
+				errorElement.nextElementSibling.innerHTML = (this.error[field.name].message !== "") ? 
+															this.error[field.name].message : "";
 			}
+
 		}
 
 		return true;
 	};
 
-	FormValidate.prototype._validateField = function(field){
-		var rules 	  = field.rules.split("|");
-			
-			for(var i = 0,rulesLength = rules.length;i<rulesLength;i++){
-				var method = rules[i],
-					param  = null,
-					failed = false,
-					parts  = ruleRegex.exec(method);
+	formValidate.prototype.validateField = function(field,element){
+		var rules = field.rules.split("|");
 
-					if(parts){
-						method = parts[1];
-						param  = parts[2];
-					} 
+		for(var i=0,rulesLength=rules.length;i<rulesLength;i++){
+			var method = rules[i],
+				param  = null,
+				failed = false,
+				parts  = ruleRegex.exec(method);
 
-				if(typeof this._hook[method] === "function"){
-					if(!this._hook[method].apply(this,[field,param])){
+				if(parts){
+					method = parts[1];
+					param  = parts[2];
+				}
+
+				if(typeof this.hook[method] === "function"){
+					if(!this.hook[method].apply(this,[field,param])){
 						failed = true;
 					}
 				}
 
 				if(failed){
-					var src = this.messages[field.name+"."+method] || this.messages[method] || defaults.messages[method],
-						message = " Erro in "+field.display+" field";
-
-						if(src){
-							message = src.replace("%s",field.display);
-							if(param){
-								message = message.replace("%s",param); 
-							}
+					var src = this.message[field.name+"."+method] || this.message[method] || defaults.message[method],
+						message = " Error in "+field.display+" field";
+						
+					if(src){
+						message = src.replace("%s",field.display);
+						if(param){
+							message = message.replace("%s",param);
 						}
+					}
 
-					this.errors.push({
+					this.error[field.name] = {
 						id      : field.id,
 						element : field.element,
 						name    : field.name,
 						message : message,
-						rule    : method 
-					});
+						rule    : method
+					};
 
-				break;   
+				}else{
+					this.error[field.name] = {
+						id      : field.id,
+						element : field.element,
+						name    : field.name,
+						message : "",
+						rule    : method
+					};
 				}
-			} 
+
+		}
+
 	};
 
-	FormValidate.prototype._hook = {
-		required 	 : function(field){
-			return (field.value !== null && field.value !== "");
+	formValidate.prototype.hook = {
+		required     : function(field){
+			return (field.value !== null || field.value !=="");
 		},
 
-		valid_email  : function(field){
+		validEmail   : function(field){
 			return emailRegex.test(field.value);
 		},
 
-		alph_num_dash : function(field){
-			return alph_num_dash.test(field.value);
+		alphaNDash   : function(field){
+			return alphaNumDash.test(field.value);
 		},
 
-		max_length    : function(field,param){
+		maxLength    : function(field,param){
 			if(!numericRegex.test(param)){
 				return false;
 			}
 			return (field.value.length <= parseInt(param,10));
 		},
 
-		min_length    : function(field,param){
+		minLength    : function(field,param){
 			if(!numericRegex.test(param)){
 				return false;
 			}
-
 			return (field.value.length >= parseInt(param,10));
 		},
 
-		matches       : function(field,matchName){
-			var el = this.form[matchName];
+		matches      : function(field,param){
+			var el = this.form[param];
 			if(el){
 				return field.value === el.value;
 			}
@@ -177,25 +169,22 @@
 
 	};
 
-	var form = new FormValidate("form-register",[{
-			name  : "email",
-			rules : "valid_email|required"
-		},{
-			name  : "username",
-			display : "username", 
-			rules :  "required|alph_num_dash|min_length[3]|max_length[15]" 
-		},{
-			name  : "password", 
-			rules : "required|min_length[6]" 
-		},{
-			name  : "confirmpassword",
-			rules : "required|matches[password]" 
-		}],function(errors){
-			if(errors.length > 0){
-				for(var i = 0;i<errors.length;i++){
-				 	//console.log(errors[i].message);  
-				}
-			}
-		}); 
+	 var form = new formValidate("form-register",[{
+	 	name    : "email",
+	 	display : "email",
+	 	rules   : "validEmail"
+	 },{
+	 	name    : "username",
+		display : "username", 
+		rules   :  "minLength[3]|maxLength[5]"
+	 },{
+	 	name  	: "password",
+	 	display : "password",  
+		rules 	: "minLength[6]"
+	 },{
+	 	name  	: "confirmpassword",
+	 	display : "confirmpassword", 
+		rules   : "matches[password]" 
+	 }]);
 
 })(window,document);
