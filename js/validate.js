@@ -1,93 +1,83 @@
 (function(window,document){
 
 	var defaults = {
-		message : {
-			required     : "The %s field is required",
-			validEmail   : "The %s field is invalid",
-			alphaNDash   : "The %s field must be alphabet,numbers and underscores",
-			maxLength    : "The %s field must be max of %s characters",
-			minLength    : "The %s field must be min of %s characters",
-			matches      : "The password field are not matching" 
+		messages : {
+			required   : "The %s field is required",
+			validEmail : "The %s field is invalid",
+			minLength  : "The %s field must be a minimum of %s length",
+			matches    : "The %s field does not matches the %s field" 
 		}
 	};
 
-	var ruleRegex     = /^(.+?)\[(.+)\]$/,  
+	var ruleRegex     = /^(.+?)\[(.+)\]$/,
 		numericRegex  = /^[0-9]+$/,
-		emailRegex    = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$/i,
-		alphaNumDash  =  /^[a-z0-9_\-]+$/i; 
+		emailRegex    = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$/i;
 
-
-	var formValidate  = function(formField,fields){
-			this.message = {};
-			this.error   = {};
-			this.field   = {};
-			this.form    = this.getFormElement(formField);
+	var FormValidate = function(formElement,fields){
+		var thisObj    = this;
+		this.form       = this.getForm(formElement);
+		this.toValidate = this.getToValidateField("validate-locally"); 
+		this.fields = {};
 			
-			for(var i=0,fieldLength=fields.length;i<fieldLength;i++){
-				var field = fields[i];
-				
-				if((!field.name || !field.rules)){
-					continue;
-				}
-				this.addField(field,field.name);
-			}
+		for(var i=0,fieldsLength=fields.length;i<fieldsLength;i++){
+			var field = fields[i];
 
-			var onkeyup = this.form.onkeyup;
-			this.form.onkeyup = (function(that){
-				return function(e){
-					that.validateForm(e);
-				};
-			})(this);
-	};
-
-	formValidate.prototype.getFormElement = function(elem){ 
-		return (typeof elem === "object") ? elem : document.forms[elem];
-	};
-
-	formValidate.prototype.addField = function(field,fieldName){
-		this.field[fieldName] = field;
-	};
-
-	formValidate.prototype.validateForm = function(e){
-		var currentField = e.target.name; 
- 		if(this.field.hasOwnProperty(currentField)){
- 			var field = this.field[currentField] || {},
- 				element = this.form[currentField];
- 				
- 				if(element && element !== undefined){
-					field.id      = element.id;
-					field.element = element;
-					field.type    = (element.length > 0) ? element[0].type : element.type;
-					field.value   = element.value;
-
-					this.validateField(field,element);
-				}
+			this.addField(field,field.name);
 		}
 
-		
-		if(this.error.hasOwnProperty(field.name)){
+		for(var i=0,fieldsLength=this.toValidate.length;i<fieldsLength;i++){
+			this.toValidate[i].onfocus = function(){
+				var field = this;
+				thisObj.setStyle.border("#15c",field);
+			};
+
+			this.toValidate[i].onblur = function(){
+				var currentThis  = this;
+				var currentField = this.name;
+				if(thisObj.fields.hasOwnProperty(currentField)){
+					var field   = thisObj.fields[currentField] || {},
+						element = thisObj.form[currentField];
+
+						if(element){
+							field.id    = element.id;
+							field.value = element.value;
+
+							thisObj.validateField(field,currentThis);
+						} 
+				}
+			};
+		};
 			
-			var errorElement = this.form[this.error[field.name].name];
-
-			if(errorElement){
-				errorElement.nextElementSibling.innerHTML = (this.error[field.name].message !== "") ? 
-															this.error[field.name].message : "";
-			}
-
-		}
-
-		return true;
 	};
 
-	formValidate.prototype.validateField = function(field,element){
+	FormValidate.prototype.getForm = function(formElement){
+		return (typeof formElement === "object") ? formElement : document.forms[formElement];
+	};
+
+	FormValidate.prototype.getToValidateField = function(field){
+		return (typeof field === "object") ? field : document.getElementsByClassName(field);
+	};
+
+	FormValidate.prototype.addField = function(field,fieldName){
+		this.fields[fieldName] = field;
+	};
+
+	FormValidate.prototype.setStyle = {
+		border : function(color,field){
+			field.style.border = "1px solid "+color;
+		}
+	};
+
+	FormValidate.prototype.validateField = function(field,currentThis){
 		var rules = field.rules.split("|");
 
 		for(var i=0,rulesLength=rules.length;i<rulesLength;i++){
-			var method = rules[i],
-				param  = null,
-				failed = false,
-				parts  = ruleRegex.exec(method);
-
+			var method   = rules[i],
+				param    = null, 
+				failed   = false,
+				parts    = ruleRegex.exec(method),
+				sibling  = this.form[field.name].nextElementSibling;
+					
 				if(parts){
 					method = parts[1];
 					param  = parts[2];
@@ -96,70 +86,46 @@
 				if(typeof this.hook[method] === "function"){
 					if(!this.hook[method].apply(this,[field,param])){
 						failed = true;
+						this.setStyle.border("#dd4b39",currentThis);
+
+						if(failed){
+							var src     = defaults.messages[method],
+								message = "Error in "+field.display+" field";
+
+							if(src){
+								message = src.replace("%s",field.display);
+								if(param){
+									message = message.replace("%s",param);
+								}
+							}
+							sibling.innerHTML = message;
+						}  
+					}else{
+						this.setStyle.border("#15c",currentThis);
+						sibling.innerHTML = "";
 					}
-				}
-
-				if(failed){
-					var src = this.message[field.name+"."+method] || this.message[method] || defaults.message[method],
-						message = " Error in "+field.display+" field";
-						
-					if(src){
-						message = src.replace("%s",field.display);
-						if(param){
-							message = message.replace("%s",param);
-						}
-					}
-
-					this.error[field.name] = {
-						id      : field.id,
-						element : field.element,
-						name    : field.name,
-						message : message,
-						rule    : method
-					};
-
-				}else{
-					this.error[field.name] = {
-						id      : field.id,
-						element : field.element,
-						name    : field.name,
-						message : "",
-						rule    : method
-					};
 				}
 
 		}
-
 	};
 
-	formValidate.prototype.hook = {
-		required     : function(field){
-			return (field.value !== null || field.value !=="");
+	FormValidate.prototype.hook = {
+		required   : function(field){
+			return (field.value !== ""); 
 		},
 
-		validEmail   : function(field){
+		validEmail : function(field){
 			return emailRegex.test(field.value);
 		},
 
-		alphaNDash   : function(field){
-			return alphaNumDash.test(field.value);
-		},
-
-		maxLength    : function(field,param){
-			if(!numericRegex.test(param)){
-				return false;
-			}
-			return (field.value.length <= parseInt(param,10));
-		},
-
-		minLength    : function(field,param){
+		minLength  : function(field,param){
 			if(!numericRegex.test(param)){
 				return false;
 			}
 			return (field.value.length >= parseInt(param,10));
 		},
 
-		matches      : function(field,param){
+		matches    : function(field,param){
 			var el = this.form[param];
 			if(el){
 				return field.value === el.value;
@@ -169,22 +135,22 @@
 
 	};
 
-	 var form = new formValidate("form-register",[{
-	 	name    : "email",
-	 	display : "email",
-	 	rules   : "validEmail"
-	 },{
-	 	name    : "username",
+	var validate = new FormValidate("form-register",[{
+		name    : "email",
+		display : "email", 
+		rules   : "required|validEmail" 
+	},{
+		name    : "username",
 		display : "username", 
-		rules   :  "minLength[3]|maxLength[5]"
-	 },{
-	 	name  	: "password",
-	 	display : "password",  
-		rules 	: "minLength[6]"
-	 },{
-	 	name  	: "confirmpassword",
-	 	display : "confirmpassword", 
-		rules   : "matches[password]" 
-	 }]);
+		rules   : "required"
+	},{
+		name    : "password",
+		display : "password", 
+		rules   : "minLength[6]" 
+	},{
+		name    : "confirmpassword",
+		display : "confirmpassword",
+		rules   : "matches[password]"
+	}]); 
 
-})(window,document);
+})(window,document); 
