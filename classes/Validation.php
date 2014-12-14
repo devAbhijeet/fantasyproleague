@@ -9,7 +9,7 @@ class Validation{
 		       "required"   => "The :field field is required",
 		       "minLength"  => "The :field field must of minimum of :rule_value length",
 		       "maxLength"  => "The :field field must of maximum of :rule_value length",
-		       "email"      => "The :field field is invalid",
+		       //"email"      => "The :field field is invalid",
 		       "regex"      => "The :field field is invalid",
 		       "unique"     => "The :field field already exists",
 		       "matches"    => "The :field field must match :rule_value",
@@ -43,7 +43,7 @@ class Validation{
 		foreach ($data["rules"] as $rule => $rule_value){
 			if(in_array($rule,$this->_rules)){
 				if(!call_user_func_array(array($this,$rule),array($field,$value,$rule_value,$source))){
-					$this->addError(str_replace(array(":field",":rule_value"),array($field,$rule_value),$this->messages[$rule]));
+					$this->addError($field,str_replace(array(":field",":rule_value"),array($field,$rule_value),$this->messages[$rule]));
 				}
 			}
 		}
@@ -62,9 +62,9 @@ class Validation{
 		return strlen(trim($value))<=$rule_value;
 	}
 
-	protected function email($field,$value,$rule_value,$source){
-		return filter_var($value,FILTER_VALIDATE_EMAIL);
-	}
+	// protected function email($field,$value,$rule_value,$source){
+	// 	return filter_var($value,FILTER_VALIDATE_EMAIL);
+	// }
 
 	protected function unique($field,$value,$rule_value,$source){
 		$query = $this->_db->get($rule_value,array("username","=",$value));
@@ -90,15 +90,28 @@ class Validation{
 		return $this->_passes;
 	}
 
-	public function addError($error){
-		$this->_error[] = $error;
+	public function addError($key=null,$error){
+		if($key){
+			$this->_error[$key][] = $error;
+		}else{
+			$this->_error[] = $error;
+		}
+	}
+
+	public function all($key=null){
+		return isset($this->_error[$key]) ? $this->_error[$key] : $this->_error;
+	}
+
+	public function first($key){
+		return isset($this->all()[$key][0]) ? $this->all()[$key][0] : "";  
 	}
 
 	public function errors(){
 		return $this->_error;
 	}
+
 	public function hasError(){
 		return !empty($this->_error);
-	}
+	} 
 
 }

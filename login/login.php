@@ -9,7 +9,7 @@ if(Input::exists()){
 		$validate = $validate->check($_POST,array(
 			"username" => array("required"=>true),
 			"password" => array("required"=>true)
-		));
+		)); 
 
 		if($validate->passed()){
 			$user = new User();
@@ -21,9 +21,7 @@ if(Input::exists()){
 				echo "Loggin error";
 			}
 		}else{
-			foreach ($validate->errors() as $error) {
-				echo $error."<br>";
-			}
+			$valErrors = $validate->errors(); 
 		}
 	}	
 }
@@ -37,12 +35,16 @@ if(Input::exists()){
 			<div class="form-field">
 				<label for="username">Username</label>
 				<input type="text" name="username" id="username" class="validate-locally" maxlength="30">
-				<span class="errors"></span>
+				<span class="errors">
+					<?php if(isset($valErrors["username"])){echo implode(", ",$valErrors["username"]);}?>
+				</span>
 			</div>
 			<div class="form-field">
 				<label for="password">Password</label>
 				<input type="password" name="password" id="password" class="validate-locally" maxlength="32">
-				<span class="errors"></span>
+				<span class="errors">
+					<?php if(isset($valErrors["password"])){echo implode(", ",$valErrors["password"]);}?>
+				</span>
 			</div>
 			<input type="hidden" name="token" value="<?php echo Token::generate();?>">
 			<div class="form-field">

@@ -151,6 +151,6 @@
 		name    : "confirmpassword",
 		display : "confirmpassword",
 		rules   : "matches[password]"
-	}]); 
+	}]);
 
 })(window,document); 

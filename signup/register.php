@@ -6,20 +6,16 @@ if(Input::exists()){
 		$validate  = new Validation();
 		$validate  = $validate->check($_POST,array(
 			"email" 		  => array(
-				"required" 	  => true,
 				"maxLength"   => 32,
-				"regex"       => "/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$/i",
-				"email"       => true
+				"regex"       => "/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$/i"
 			),
 			"username" 		  => array(
-				"required"    => true,
 				"maxLength"   => 32,
 				"minLength"   => 3,
 				"alnumdash"   => "/^[a-z0-9_\-]+$/i",
 				"unique"      => "users"
 			),
 			"password"		  => array(
-				"required"    => true,
 				"minLength"   => 6 
 			),
 			"confirmpassword" => array(
@@ -40,7 +36,7 @@ if(Input::exists()){
 					"username" => Input::get("username"),
 					"password" => Hash::make(Input::get("password"),$salt),
 					"salt"     => $salt,
-					"joined"   => "NOW()"
+					"joined"   => "NOW()" 
 				));
 				Session::flash("success","You are registered successfully");
 				Redirect::to("index.php");
@@ -48,10 +44,8 @@ if(Input::exists()){
 				echo $e->getMessage();
 			}
 		}else{
-			foreach ($validate->errors() as $error) {
-				echo $error."<br>"; 
-			}
-		} 
+			$valErrors = $validate->errors();
+		}
 	}
 }
 
@@ -72,7 +66,9 @@ if(Input::exists()){
 						<div class="form-field">
 							<label for="email">Email Address</label>
 							<input type="email" name="email" id="email" maxlength="32" class="validate-locally" value="<?php echo Input::get('email');?>">
-							<span class="errors"></span>
+							<span class="errors">
+								<?php if(isset($valErrors["email"])){echo implode(", ",$valErrors["email"]);}?>
+							</span>
 							<span class="no-errors"></span>
 							<span class="input-info" id="info"></span>
 						</div> 
@@ -80,7 +76,9 @@ if(Input::exists()){
 						<div class="form-field">
 							<label for="username">Choose a username</label>
 							<input type="text" name="username" id="username" maxlength="32" class="validate-locally" value="<?php echo Input::get('username');?>">
-							<span class="errors"></span>
+							<span class="errors">
+								<?php if(isset($valErrors["username"])){echo implode(", ",$valErrors["username"]);}?>
+							</span>
 							<span class="no-errors"></span>
 							<span class="input-info" id="info"></span>
 						</div>
@@ -88,7 +86,9 @@ if(Input::exists()){
 						<div class="form-field">
 							<label for="password">Create a password</label>
 							<input type="password" name="password" id="password" maxlength="32" class="validate-locally">
-							<span class="errors"></span>
+							<span class="errors">
+								<?php if(isset($valErrors["password"])){echo implode(", ",$valErrors["password"]);}?>
+							</span>
 							<span class="no-errors"></span>
 							<span class="input-info" id="info"></span>
 						</div>
@@ -96,7 +96,7 @@ if(Input::exists()){
 						<div class="form-field">
 							<label for="confirmpassword">Confirm your password</label>
 							<input type="password" name="confirmpassword" id="confirmpassword" maxlength="32" class="validate-locally">
-						   <span class="errors"></span> 
+						   <span class="errors"><?php if(isset($valErrors["confirmpassword"])){echo implode(", ",$valErrors["confirmpassword"]);}?></span> 
 						   <span class="no-errors"></span>
 						</div> 
 
