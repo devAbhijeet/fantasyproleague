@@ -3,6 +3,13 @@ require_once "core/init.php";
 dir_name_autoload('fantasyproleague'); 
 
 $user = new User();
+$mail = new Mail(new PHPMailer(),array(
+			"name"     => "name",
+			"email"    => "name@gmail.com",
+			"subject"  => "Test Email",
+			"body"     => "This is a test email"
+		));
+
 if($user->loggedIn()):?>
  
 <p>

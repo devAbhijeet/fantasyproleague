@@ -96,7 +96,7 @@ class Validation{
 		}else{
 			$this->_error[] = $error;
 		}
-	}
+	} 
 
 	public function all($key=null){
 		return isset($this->_error[$key]) ? $this->_error[$key] : $this->_error;
