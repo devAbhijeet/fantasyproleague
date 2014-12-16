@@ -5,5 +5,5 @@ dir_name_autoload("login");
 $user = new User();
 if($user->loggedIn()){
 	$user->logout();
-	Redirect::to("index.php");
+	Redirect::to("../index.php");
 }

@@ -67,7 +67,7 @@ class Validation{
 	// }
 
 	protected function unique($field,$value,$rule_value,$source){
-		$query = $this->_db->get($rule_value,array("username","=",$value));
+		$query = $this->_db->get($rule_value,array($field,"=",$value));
 		if(!$query->count()){
 			return true; 
 		}

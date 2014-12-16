@@ -7,6 +7,7 @@ if(Input::exists()){
 		$validate  = $validate->check($_POST,array(
 			"email" 		  => array(
 				"maxLength"   => 32,
+				"unique"      => "users",
 				"regex"       => "/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$/i"
 			),
 			"username" 		  => array(
@@ -27,19 +28,37 @@ if(Input::exists()){
 			
 			array_walk($_POST,"Sanatize::arraySanatize");
 			
-			$user = new User();
-			$salt = Hash::salt(32);
+			$user      = new User();
+			$salt      = Hash::salt(32);
+			$emailcode = Hash::make(Input::get("email"));
 
-			try{
+			try{ 
 				$user->create(array(
-					"email"    => Input::get("email"),
-					"username" => Input::get("username"),
-					"password" => Hash::make(Input::get("password"),$salt),
-					"salt"     => $salt,
-					"joined"   => "NOW()" 
+					"email"     => Input::get("email"),
+					"emailcode" => $emailcode, 
+					"username"  => Input::get("username"),
+					"password"  => Hash::make(Input::get("password"),$salt),
+					"salt"      => $salt,
+					"joined"    => "NOW()"
 				));
-				Session::flash("success","You are registered successfully");
-				Redirect::to("index.php");
+
+				$body = "Hello ".Input::get("username").",<br><br> You have been successfully registered on fantasyproleague.<br><br>
+						 However you need to activate your account. Please Click on the link below to Activate<br><br>
+						 <a href='http://localhost/fantasyproleague/activate.php?email=".Input::get("email")."&emailcode=".$emailcode."'>Activate</a><br><br>
+						 CodeShak						
+						"; 
+
+				$details = [
+					"name"     => Input::get("username"),
+ 					"email"    => Input::get("email"),
+ 					"subject"  => "Email Activation", 
+					"body"     => $body 
+				];
+
+				if(Mail::getMailHandle()->setDetails()->sendMail($details)->passed()){
+					Session::flash("success","You are registered successfully, Please activate you account");
+					Redirect::to("../index.php");
+				}
 			}catch(Exception $e){
 				echo $e->getMessage();
 			}
@@ -50,6 +69,8 @@ if(Input::exists()){
 }
 
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>

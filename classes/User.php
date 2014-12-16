@@ -25,12 +25,32 @@ class User{
 
 	public function create($fields = array()){
 		if(!$this->_db->insert("users",$fields)){
-			throw new Exception("Error Processing Request", 1);
+			throw new Exception("There was a problem creating account", 1);
 		}
 	}
 
-	public function find($user = null){
-		$field = is_numeric($user) ? "id" : "username";
+	public function update($fields = array(),$id = null){
+
+		if(!$id && $this->isLoggedIn()){
+			$id = $this->data()->id;
+		}
+
+		if(!$this->_db->update("users",$id,$fields)){
+			throw new Exception("There was a problem updating account", 1);
+		}
+
+	}
+
+	public function aoUpdate($fields = array(),$param = array()){ 
+
+		if(!$this->_db->aoUpdate("users","AND",$fields,$param)){
+			throw new Exception("There was a problem updating account", 1);
+		}
+		
+	}
+
+	public function find($user = null,$match = null){
+		$field = is_numeric($user) ? "id" : $match;
 		
 		if($user){
 			$data = $this->_db->get("users",array($field,"=",$user));
@@ -43,8 +63,8 @@ class User{
 	}
 
 	public function login($username=null,$password=null){
-		$user = $this->find($username);
-		if($user){
+		$user = $this->find($username,"username");
+		if($user && $this->data()->active){
 			if($this->data()->password == Hash::make($password,$this->data()->salt)){
 				Session::put($this->_sessionName,$this->data()->id);
 				return true;

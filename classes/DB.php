@@ -103,6 +103,39 @@ class DB{
     		}
     	}
     	return false;
+    }
+
+    public function aoUpdate($table,$operator,$fields = array(),$param = array()){
+        if(count($param) && count($fields)){
+            $set = ""; $at  = "";
+            $x   = 1; $y    = 1;
+            foreach ($param as $field => $value) {
+                $set.= "{$field} = ?";
+                if($x<count($param)){
+                    $set.=", ";
+                }
+                $x++;
+            }
+
+            foreach ($fields as $field => $value) { 
+                if(is_numeric($value)){
+                    $at.= "{$field} = {$value}";
+                }else{
+                    $at.= "{$field} = '".$value."'";
+                }
+                if($y<count($fields)){
+                    $at.=" {$operator} ";
+                }
+                $y++;
+            }
+
+            $sql = "UPDATE {$table} SET {$set} WHERE {$at}";
+            
+            if(!$this->query($sql,$param)->error()){
+                return true;
+            }
+        }
+        return false;
     }  
 
     public function get($table,$param = array()){
