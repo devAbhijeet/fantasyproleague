@@ -1,12 +1,23 @@
 <?php
-require_once "../core/init.php";
-dir_name_autoload("signup");
+use codeshak\classes\Input;
+use codeshak\classes\Token; 
+use codeshak\classes\Validation;
+use codeshak\classes\User;
+use codeshak\classes\Hash;
+use codeshak\classes\Mail;
+use codeshak\classes\Session;
+use codeshak\classes\Redirect; 
+
+use codeshak\generals\Sanatize;  
+
+require_once "../app/init.php";
+
 if(Input::exists()){
 	if(Token::check(Input::get('token'))){
 		$validate  = new Validation();
 		$validate  = $validate->check($_POST,array(
 			"email" 		  => array(
-				"maxLength"   => 32,
+				"maxLength"   => 32, 
 				"unique"      => "users",
 				"regex"       => "/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$/i"
 			),

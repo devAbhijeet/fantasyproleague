@@ -1,11 +1,23 @@
 <?php
-require_once "core/init.php";
-dir_name_autoload("fantasyproleague");
+use codeshak\classes\Input;
+use codeshak\classes\Token; 
+use codeshak\classes\Validation;
+use codeshak\classes\User;
+use codeshak\classes\Hash;
+use codeshak\classes\Mail;
+use codeshak\classes\Redirect;
+use codeshak\classes\UniversalMessage as UniMess; 
+
+use codeshak\generals\Sanatize;
+
+require_once "app/init.php";
 
 $modes = ["username","password"];
+
 if(Input::exists("get") && in_array(Input::get("mode"), $modes)){
 	if(Input::exists()){
 	 	if(Token::check(Input::get("token"))){
+
 			$validate = new Validation();
 			$validate = $validate->check($_POST,[
 					"email" => [
@@ -15,29 +27,51 @@ if(Input::exists("get") && in_array(Input::get("mode"), $modes)){
 			]);
 
 			if($validate->passed()){
-				array_walk($_POST,"Sanatize::arraySanatize");
+				//array_walk($_POST,"Sanatize::arraySanatize");
 			
-				$user = new User(); 
-				if($user->find(Input::get("email"),"email")){
+				$user = new User();
+				$user->find(Input::get("email"),"email");
+
+				if($user){
 					if(Input::get("mode") == "username"){
-						$body = "Hello ".$user->data()->username."It seems like you have lost your username <br><br>
-								In response to which we have recovered it for you.Your Username is -".$user->data()->username." <br><br>
-								Please click on link below to login with new Username<br><br>
-								<a href='http://localhost/fantasyproleague/login/login.php'>Login</a>  --CodeShak
-								"; 
+
+						$uniMess = new UniMess($user->data()->username);
+						$body = $uniMess->message();  
 
 						$details = [
 							"name"     => $user->data()->username,
  							"email"    => Input::get("email"),
- 							"subject"  => "Email Activation", 
+ 							"subject"  => "Username Recovery", 
 							"body"     => $body 
 						];
 
 						if(Mail::getMailHandle()->setDetails()->sendMail($details)->passed()){
-							Redirect::to("recover.php?success");
+							Redirect::to("index.php");
+						} 
+					}else if(Input::get("mode") == "password"){
+						$salt    = Hash::salt(32);
+						$pass    = rand(999,999999);
+						$newPass = substr(Hash::make($pass,$salt),0,8);
+
+						$user->update(array(
+								"password"                 => $newPass,
+								"salt"                     => $salt,
+								"password_recover"         => "1"
+							),$user->data()->id);
+
+						$uniMess = new UniMess($user->data()->username,$pass);
+						$body = $uniMess->message();
+
+						$details = [
+							"name"     => $user->data()->username,
+ 							"email"    => Input::get("email"),
+ 							"subject"  => "Password Recovery", 
+							"body"     => $body
+						];
+
+						if(Mail::getMailHandle()->setDetails()->sendMail($details)->passed()){
+							Redirect::to("index.php");
 						}
-					}else{
-						// password
 					}
 				}else{
 					$valErrors = ["email"=>["Email does'nt exists"]];
@@ -50,9 +84,6 @@ if(Input::exists("get") && in_array(Input::get("mode"), $modes)){
 }else{
 	Redirect::to(404); 
 }
-
-
-
 ?>
 
 

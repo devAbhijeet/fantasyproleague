@@ -1,6 +1,9 @@
 <?php
-require_once "core/init.php";
-dir_name_autoload('fantasyproleague');
+use codeshak\classes\User;
+use codeshak\classes\Redirect;
+use codeshak\classes\Input; 
+
+require_once "app/init.php";
 
 $user = new User();
 
@@ -15,7 +18,7 @@ if(Input::exists("get")){
 	if($user->find($email,"email")){
 		if($user->data()->emailcode===$emailcode){
 			try{
-				$user->aoUpdate(
+				$user->aoUpdate( 
 					[
 					"email"     => $email,
 					"active"    => 0

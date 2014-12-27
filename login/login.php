@@ -1,7 +1,12 @@
 <?php
-require_once "../core/init.php";
-dir_name_autoload("login");
+use codeshak\classes\Input;
+use codeshak\classes\Token; 
+use codeshak\classes\Validation;
+use codeshak\classes\User;
+use codeshak\classes\Redirect;
 
+require_once "../app/init.php";
+ 
 if(Input::exists()){
 	if(Token::check(Input::get("token"))){
 
@@ -24,7 +29,7 @@ if(Input::exists()){
 			$valErrors = $validate->errors(); 
 		}
 	}	
-}
+} 
 ?>
 
 <div class="signin-container">
@@ -53,10 +58,10 @@ if(Input::exists()){
 	        <div class="forget">
 	        	<small>
 	        		Forgot
-	        		<a href="">Username</a>&nbsp/
+	        		<a href="../recover.php?mode=username">Username</a>&nbsp/
 	        	</small>
 	        	<small>
-	        		<a href="">Password</a>
+	        		<a href="../recover.php?mode=password">Password</a>
 	        	</small>
 	        </div>
 		</fieldset>
